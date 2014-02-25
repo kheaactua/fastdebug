@@ -9,14 +9,16 @@ SHELL = /bin/bash
 OPTIL?=2
 
 # Are we in an Env Can environment?
-ENV_CAN=1
-ifeq ($(ENV_CAN),1)
-FC:=s.f90 -mpi -O$(OPTIL)
-CC:=s.cc -mpi -O$(OPTIL)
-else
-# Not tested yet
+ifeq (,$(BASE_ARCH))
 FC:=pgfortran -O$(OPTIL)
 CC:=pgcc -mpi -O$(OPTIL)
+else
+ifeq "$(BASE_ARCH)" "$(EC_ARCH)"
+$(error FATAL: EC_ARCH is equal to BASE_ARCH, no compiler architecture is defined, ABORTING)
+endif
+FC:=s.f90 -mpi -O$(OPTIL)
+CC:=s.cc -mpi -O$(OPTIL)
+# Not tested yet
 endif
 
 .f90.o:
@@ -66,3 +68,6 @@ testf:
 
 testc:
 	mpicc -o test -DTEST=1 fastdebug.c
+
+clean:
+	rm -f fastdebug.o libfastdebug.a test.o
