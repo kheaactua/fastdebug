@@ -1,4 +1,4 @@
-.SUFFIXES : .c .o .f .ftn .ftn90
+.SUFFIXES : .c .o .f .f90 .ftn .ftn90
 
 SHELL = /bin/bash
 
@@ -48,7 +48,7 @@ endif
 #	rm -f bidon.o
 #
 
-lib: fastdebug.o
+lib: fastdebug.o fill_common.o
 	ar rcs libfastdebug.a fastdebug.o
 
 stubs:
