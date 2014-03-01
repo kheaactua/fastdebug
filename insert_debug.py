@@ -19,7 +19,7 @@ nowrite_files=[]
 VERBOSE=1
 DRYRUN=False
 processed_suf="mattdebug_orig"
-FUNC_EXCLUDE_LIST=['mattdebug', 'hostnm', 'getpid', 'qqexit', \
+FUNC_EXCLUDE_LIST=['mattdebug', 'fastdebug', 'hostnm', 'getpid', 'qqexit', \
                    'mxma8', 'inverse', \
                    'vsexp', 'vssqrt', 'vlog', 'vexp', 'vcos', 'vsin', 'vexp', 'vasin', 'vatan', 'vrec', 'vscos', 'vssin','vsrec', 'vsqrt', 'vslog', 'vatan2', \
                    'hines_intgrl', \
@@ -27,7 +27,7 @@ FUNC_EXCLUDE_LIST=['mattdebug', 'hostnm', 'getpid', 'qqexit', \
                    'newdate', 'datec', \
                    'tmg_stop', 'tmg_stop0', 'tmg_start', 'tmg_start0', 'low2up', 'tmg_init0', 'tmg_init', 'convip', 'splitst' \
                    'dgemm', 'constnt', \
-                   'hines_sigma', 'serxst', 'mzonxst', \
+                   'hines_sigma', 'serxst', 'mzonxst', 'gesdict', \
                   ]
 # mxma8, inverse: Matrix functions, called 1M times, it's also a bad sign
 # vsexp, vssqrt, vlog, vexp: Vector functions
