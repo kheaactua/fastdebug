@@ -107,7 +107,7 @@ int fastdebug_(const char *str, int *lineno ,int str_len) {
 	MPI_Initialized(&flag);
 	if(flag==0) return 1;
 	if (fp == -1) {
-                if(NULL!=getenv("MATT_PREFIX")) prefix=getenv("MATT_PREFIX");
+		if(NULL!=getenv("MATT_PREFIX")) prefix=getenv("MATT_PREFIX");
 		mypid=getpid();
 		MPI_Initialized(&flag);
 		if(flag) MPI_Comm_rank(MPI_COMM_WORLD, &myrank );
