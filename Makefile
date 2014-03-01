@@ -1,4 +1,4 @@
-.SUFFIXES : .c .o .f .f90 .ftn .ftn90
+.SUFFIXES : .c .o .f .f90 .ftn .ftn90 .F90
 
 SHELL = /bin/bash
 
@@ -21,6 +21,8 @@ CC:=s.cc -mpi -O$(OPTIL)
 # Not tested yet
 endif
 
+.F90.o:
+	$(FC) -c $<
 .f90.o:
 	$(FC) -c $<
 .f.o:
@@ -49,7 +51,7 @@ endif
 #
 
 lib: fastdebug.o fill_common.o
-	ar rcs libfastdebug.a fastdebug.o
+	ar rcs libfastdebug.a $^
 
 stubs:
 	@echo "Not yet implemented"
