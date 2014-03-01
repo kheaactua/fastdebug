@@ -40,7 +40,7 @@ FILE_EXCLUDE_LIST=['set_world_view']
 # Some REs
 comment = re.compile('^[\*c!]+.*', re.IGNORECASE)
 md = re.compile('.*mattdebug.*', re.IGNORECASE)
-p = re.compile('.*\Wcall\W*([^\(]+).*', re.IGNORECASE)
+p = re.compile('.*\Wcall\s+\W*([^\(]+).*', re.IGNORECASE)
 #pn = re.compile('^([\s0-9]+)call ([a-z0-9_]+)\W', re.IGNORECASE)
 pn = re.compile('^([\s0-9]{1,5}\s*)call ([a-z0-9_]+)\W', re.IGNORECASE)
 pi = re.compile('^(\s+)(if\s*\(.*\))\s*call ([^\(]+)[ ]*(.*)$', re.IGNORECASE)
