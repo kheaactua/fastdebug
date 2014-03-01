@@ -115,7 +115,7 @@ def processFile(fname):
 
 				# Function exclude list
 				if VERBOSE > 1:
-					print("Checking function '%s'"%func)
+					print("\nChecking function '%s'"%func)
 				if any(func in s for s in FUNC_EXCLUDE_LIST):
 					if VERBOSE > 0:
 						print("-- Excluding functiion %s"%func)
