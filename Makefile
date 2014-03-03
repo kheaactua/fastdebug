@@ -50,7 +50,7 @@ endif
 #	rm -f bidon.o
 #
 
-lib: fastdebug.o fill_common.o
+lib: fastdebug.o trickBoundsChecking.o
 	ar rcs libfastdebug.a $^
 
 stubs:
@@ -72,4 +72,4 @@ testc:
 	mpicc -o test -DTEST=1 fastdebug.c
 
 clean:
-	rm -f fastdebug.o libfastdebug.a test.o
+	rm -f fastdebug.o libfastdebug.a test.o trickBoundsChecking.o
