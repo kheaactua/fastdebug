@@ -88,12 +88,6 @@ char *trim(char *str) {
 	return str;
 }
 
-// Function was first implemented under this name,
-// so now this is just a deprecated redirection function
-int mattdebug_(const char *str, int *lineno ,int str_len) {
-	return fastdebug_(str, lineno, str_len);
-}
-
 int fastdebug_(const char *str, int *lineno ,int str_len) {
 
 	int flag;
@@ -104,6 +98,9 @@ int fastdebug_(const char *str, int *lineno ,int str_len) {
 	char *prefix = "/tmp/gmdebug/debug-";
 	char preamble[ROUGH_PREAMBLE_LENGTH];
 
+	// Get the hostname
+	gethostname(hostname, sizeof hostname);
+
 	MPI_Initialized(&flag);
 	if(flag==0) return 1;
 	if (fp == -1) {
@@ -111,7 +108,7 @@ int fastdebug_(const char *str, int *lineno ,int str_len) {
 		mypid=getpid();
 		MPI_Initialized(&flag);
 		if(flag) MPI_Comm_rank(MPI_COMM_WORLD, &myrank );
-		else fprintf(stderr,"[mattdebug] MPI NOT STARTED\n");
+		else fprintf(stderr,"[fastdebug] MPI NOT STARTED\n");
 
 		// just for debug..
  		if (VERBOSE) mypid=0;
@@ -119,13 +116,10 @@ int fastdebug_(const char *str, int *lineno ,int str_len) {
 		snprintf(fname,sizeof(fname)-1,"%s%5.5d-%3.3d",prefix,mypid,myrank);
 		if (VERBOSE) printf("Opening file %s\n", fname);
 		if ((fp=open(fname, O_WRONLY | O_CREAT | O_APPEND, mode)) < 0) {
-			fprintf(stderr, "[mattdebug]: Cannot open file %s\n", fname);
+			fprintf(stderr, "[fastdebug]: Cannot open file %s on \n", fname, hostname);
 			exit(1);
 		}
 	}
-
-	// Get the hostname
-	gethostname(hostname, sizeof hostname);
 
 	// Write the preable, so, time, hostname, etc.
 	snprintf(preamble, ROUGH_PREAMBLE_LENGTH+1,
@@ -142,9 +136,9 @@ int fastdebug_(const char *str, int *lineno ,int str_len) {
 	str_len++; // null character
 
 	// Trim white space
-	if (VERBOSE) printf("[mattdebug] Trying to allocation %d characters for nstr \"%s\"\n", str_len, str);
+	if (VERBOSE) printf("[fastdebug] Trying to allocation %d characters for nstr \"%s\"\n", str_len, str);
 	if ((nstr=(char *)alloca(str_len)) == NULL) {
-		fprintf(stderr, "[mattdebug]: Cannot allocate msg %d characters for string.\n", (str_len+2));
+		fprintf(stderr, "[fastdebug]: Cannot allocate msg %d characters for string.\n", (str_len+2));
 		exit(1);
 	}
 	snprintf(nstr, str_len, "%s", str); // copy it to a mutable stirng
@@ -156,9 +150,9 @@ int fastdebug_(const char *str, int *lineno ,int str_len) {
 	// The 128 is a magic number buffer, for the spaces and line breaks, etc..
 	str_len=str_len+strlen(preamble)+128;
 
-	if (VERBOSE) printf("[mattdebug] Trying to allocation %d characters for combined string \"%s %s\"\n", str_len+2, preamble, nstr);
+	if (VERBOSE) printf("[fastdebug] Trying to allocation %d characters for combined string \"%s %s\"\n", str_len+2, preamble, nstr);
 	if ((msg=(char *)alloca(str_len)) == NULL) {
-		fprintf(stderr, "[mattdebug]: Cannot allocate msg %d characters for string.\n", (str_len+2));
+		fprintf(stderr, "[fastdebug]: Cannot allocate msg %d characters for string.\n", (str_len+2));
 		exit(1);
 	}
 
@@ -174,6 +168,11 @@ int fastdebug_(const char *str, int *lineno ,int str_len) {
 	return 1;
 }
 
+// Function was first implemented under this name,
+// so now this is just a deprecated redirection function
+int mattdebug_(const char *str, int *lineno ,int str_len) {
+	return fastdebug_(str, lineno, str_len);
+}
 
 // This is done to allow me to either directly build this
 // as an executable, or build it with s.compile using a bidon
