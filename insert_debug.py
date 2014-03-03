@@ -45,6 +45,8 @@ p = re.compile('.*\Wcall\s+\W*([^\(]+).*', re.IGNORECASE)
 pn = re.compile('^([\s0-9]{1,5}\s*)call ([a-z0-9_]+)\W', re.IGNORECASE)
 pi = re.compile('^(\s+)(if\s*\(.*\))\s*call ([^\(]+)[ ]*(.*)$', re.IGNORECASE)
 
+co = re.compile('^(\s+)do ([a-z]+)=1,\s*COMMON_SIZE.([^)]+).\s*$', re.IGNORECASE)
+sd = re.compile("^\s*([a-z0-9_]+)\(.\)\s*=\s*([a-z0-9_]+)\(.*$", re.IGNORECASE)
 
 # Check to see if a processed file
 # also exists in the list
@@ -167,6 +169,84 @@ def processFile(fname):
 	f.close()
 	return newlines
 
+def filterCommonSizeLoops(lines, fname, VERBOSE):
+	# Though this filter could be run in the loop above,
+	# it makes the code more complicated.  Plus, this way
+	# it's simpler to en/disable this filter alone
+
+	# Disabling this function
+	return lines
+
+	line0='' # line0 is basically last line
+
+	in_common_init = False
+	src_var = ""
+	dest_var = ""
+	main_var = ""
+	space=""
+
+	newlines=[]
+
+	for line1, line2 in get_next(lines):
+
+		if not line2:
+			line2=""
+
+		#print("Line0: ", line0.strip())
+		#print("Line1: ", line1.strip())
+		#print("Line2: ", line2.strip(), "\n")
+
+		if in_common_init:
+
+			m=sd.match(line2)
+
+			if re.match("\s*end\s*do.*", line1):
+
+				if len(src_var) == 0:
+					raise Exception("While replacing COMMON_SIZE loop, could not find source var")
+				if len(dest_var) == 0:
+					raise Exception("While replacing COMMON_SIZE loop, could not find destination var")
+
+				in_common_init = False
+
+				if VERBOSE>0:
+					print("Replacing a COMMON_SIZE do loop for %s"%main_var)
+
+				# Write out stuff
+				newlines.append("\n%scall mattdebug(\"Calling COMMON_SIZE(%s) - %s\", __LINE__)\n"%(space, main_var, fname))
+				newlines.append("%s CALL copy_with_offset_1(%s(0), %s(1), COMMON_SIZE(%s))\n"%(space, src_var, dest_var, main_var))
+
+				src_var=""
+				dest_var = ""
+				main_var = ""
+	
+			elif m:
+				src_var=m.group(2)
+				dest_var=m.group(1)
+			else:
+				if VERBOSE>1:
+					print("src_var=%s, dest_var=%s"%(src_var, dest_var))
+
+
+		else:
+			# Second filter, modify the COMMON_SIZE do loops
+			m = co.match(line2)
+			if m:
+
+				in_common_init = True
+				main_var = m.group(3)
+				space=m.group(1)
+
+				if VERBOSE>0:
+					print("Matched a COMMON_INIT do loop, main_var=%s"%(main_var))
+
+			else:
+
+				newlines.append(line1)
+
+		line0=line1
+
+	return newlines
 
 def outputFile(fname, content):
 	global nowrite_files,VERBOSE
@@ -293,6 +373,7 @@ def main():
 				for f in files:
 					try:
 						content = processFile(f)
+						#content = filterCommonSizeLoops(content, f, VERBOSE)
 						outputFile(f, content)
 					except Exception as err:
 						print("Could not process file: %s"%err)
@@ -300,89 +381,6 @@ def main():
 			else:
 				print("No files to process")
 
-#
-#		# Ver basic for now..
-#		if VERBOSE>1:
-#			print("Received %d arguments"%len(sys.argv))
-#		if len(sys.argv)>2:
-#			if VERBOSE>2:
-#				print("Received arguments: %s"%str(sys.argv))
-#			cmd=sys.argv[1]
-#			if cmd == "reset" or cmd == "undo":
-#				# Resetting
-#				# Some duplicate code here, but doing it in a hurry
-#				# will regret still later.
-#
-#
-#				files=[]
-#				# Again, improve later when there is time
-#				if len(sys.argv)==3:
-#					pf="%s.%s"%(sys.argv[2], processed_suf)
-#					if not isfile(pf):
-#						print("File %s was not processed by this script (%s doesn't exist.)"%(sys.argv[2], pf))
-#						exit(1)
-#					
-#					files.append(pf)
-#					if VERBOSE>0:
-#						print("Undoing file %s"%pf)
-#				else:
-#					files=listdir('.')
-#
-#				if VERBOSE>0:
-#					print("Files to undo: %s"%" ".join(map(str, files)))
-#				for pf in files:
-#					m = re.match("^(.*)\.%s$"%processed_suf, pf)
-#					if m:
-#						f = m.group(1)
-#						if VERBOSE>1:
-#							print("pf=%s, f=%s"%(pf, f))
-#
-#						changeBack=False
-#						mode=bool(os.stat(f).st_mode & stat.S_IWUSR)
-#						if not mode:
-#							if VERBOSE > 0:
-#								print("- Setting %s to writable (temporararily)"%f)
-#							os.chmod(f, os.stat(f).st_mode | stat.S_IWUSR)
-#							changeBack=True
-#
-#						if VERBOSE>0:
-#							print("Undoing debug to %s"%pf)
-#						copyfile(pf, f)
-#						unlink(pf)
-#
-#						if changeBack:
-#							if VERBOSE > 0:
-#								print("- Setting %s to not-writable"%f)
-#							os.chmod(f, os.stat(f).st_mode & ~stat.S_IWUSR)
-#					else:
-#						if VERBOSE>1:
-#							print("Skipping %s"%pf)
-#
-#				#print("Files to undo: %s"%"\n".join(map(str, files)))
-#				#exit(1)
-#			else:
-#				print("Do not reconginize %s, ABORT"%cmd)
-#
-#		else:
-#			# Normal operation..
-#
-#			# Get file listing
-#			files=[]
-#			for f in listdir('.'):
-#				# Avoid cdk files
-#				m=re.match("^([a-z0-9_]+)\.(ftn|ftn90|cdk90)+$", f)
-#				if m and not any(m.group(1) in s for s in FILE_EXCLUDE_LIST):
-#					files.append(f)
-#			#print("Pre-filtered Files: %s"%"\n".join(map(str, files)))
-#			#exit(0)
-#			files=filterFiles(files)
-#			if len(files):
-#				print("Processing Files: %s"%"\n".join(map(str, files)))
-#			else:
-#				print("No files to process")
-#			for f in files:
-#				content = processFile(f)
-#				outputFile(f, content)
 
 if __name__ == "__main__":
 	main()
