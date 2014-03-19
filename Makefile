@@ -8,6 +8,10 @@ SHELL = /bin/bash
 # Default optimization
 OPTIL?=2
 
+# Prof
+PROF:=-Mprof=time
+#PROF:=-pg
+
 # Are we in an Env Can environment?
 ifeq (,$(BASE_ARCH))
 FC:=pgfortran -O$(OPTIL)
@@ -22,11 +26,11 @@ CC:=s.cc -mpi -O$(OPTIL)
 endif
 
 .F90.o:
-	$(FC) -c $<
+	$(FC) $(PROF) -c $<
 .f90.o:
-	$(FC) -c $<
+	$(FC) $(PROF) -c $<
 .f.o:
-	$(FC) -c $<
+	$(FC) $(PROF) -c $<
 .ftn90.o:
 	rm -f $*.f90
 	$(FC) -c $<
@@ -34,7 +38,7 @@ endif
 #	rm -f $*.f90
 #	$(FTNC) $<
 .c.o:
-	$(CC) -c $<
+	$(CC) $(PROF) -c $<
 .s.o:
 	$(AS) -c $(CPPFLAGS) $(ASFLAGS) $<
 
