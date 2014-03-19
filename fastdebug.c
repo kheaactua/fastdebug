@@ -21,6 +21,7 @@ int MPI_Finalize() { return 0 ;}
 static int fp=-1;
 static int mypid=-1;
 static int myrank=999;
+static int fast_debug_error=0;
 
 #ifdef DEBUG
 #define VERBOSE 1
@@ -98,6 +99,8 @@ int fastdebug_(const char *str, int *lineno ,int str_len) {
 	char *prefix = "/tmp/gmdebug/debug-";
 	char preamble[ROUGH_PREAMBLE_LENGTH];
 
+	if (fast_debug_error) return 0;
+
 	// Get the hostname
 	gethostname(hostname, sizeof hostname);
 
@@ -116,8 +119,10 @@ int fastdebug_(const char *str, int *lineno ,int str_len) {
 		snprintf(fname,sizeof(fname)-1,"%s%5.5d-%3.3d",prefix,mypid,myrank);
 		if (VERBOSE) printf("Opening file %s\n", fname);
 		if ((fp=open(fname, O_WRONLY | O_CREAT | O_APPEND, mode)) < 0) {
-			fprintf(stderr, "[fastdebug]: Cannot open file %s on \n", fname, hostname);
-			exit(1);
+			fprintf(stderr, "[fastdebug]: Cannot open file %s on %s.  Deactivating fastdebug.\n", fname, hostname);
+			//exit(1);
+			fast_debug_error=1;
+			return 0;
 		}
 	}
 
