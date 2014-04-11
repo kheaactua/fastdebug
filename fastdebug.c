@@ -18,10 +18,14 @@ int MPI_Finalize() { return 0 ;}
 #include <mpi.h>
 #endif
 
+// Default value of whether this routine does anything
+#define START_AS_STUB 0
+
 static int fp=-1;
 static int mypid=-1;
 static int myrank=999;
 static int fast_debug_error=0;
+static int is_stubbed = START_AS_STUB;
 
 #ifdef DEBUG
 #define VERBOSE 1
@@ -31,6 +35,11 @@ static int fast_debug_error=0;
 #define USE_MPI 1
 #define MAX_STR_LEN 2048
 #define ROUGH_PREAMBLE_LENGTH 100
+
+// Setters to toggle debug
+void fastdebug_activate_(long on_off) {
+	is_stubbed = (int)on_off;
+}
 
 //
 // Returns unix time stamp with micro time appended
@@ -96,10 +105,12 @@ int fastdebug_(const char *str, int *lineno ,int str_len) {
 	char *msg, *nstr;
 	char hostname[30], fname[50];
 //	char prefix[] = "/tmp/gmdebug/debug-";
-	char *prefix = "/tmp/gmdebug/debug-";
+	char *prefix = "/scratch/gmdebug-";
 	char preamble[ROUGH_PREAMBLE_LENGTH];
 
-	if (fast_debug_error) return 0;
+	// Bail immediately if there has been an error, or we're simply deactivated
+	// and acting as a stub file.
+	if (fast_debug_error || is_stubbed) return 0;
 
 	// Get the hostname
 	gethostname(hostname, sizeof hostname);
