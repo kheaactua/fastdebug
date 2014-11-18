@@ -6,6 +6,7 @@
 #include <sys/stat.h>
 #include <sys/time.h>
 #include <time.h>
+#include <alloca.h> 
 
 // If I want a no mpi version, define this macro
 #ifdef NOMPI
