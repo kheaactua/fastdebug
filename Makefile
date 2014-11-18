@@ -9,8 +9,11 @@ SHELL = /bin/bash
 OPTIL?=2
 
 # Prof
-PROF:=-Mprof=time
+#PROF:=-Mprof=time
 #PROF:=-pg
+PROF:=-pg
+
+#DEBUG_FLAGS:=-b loadmap:PARM 
 
 # Are we in an Env Can environment?
 ifeq (,$(BASE_ARCH))
@@ -24,6 +27,9 @@ FC:=s.f90 -mpi -O$(OPTIL)
 CC:=s.cc -mpi -O$(OPTIL)
 # Not tested yet
 endif
+
+#OBJECTS:=fastdebug.o trickBoundsChecking.o
+OBJECTS:=fastdebug.o
 
 .F90.o:
 	$(FC) $(PROF) -c $<
@@ -54,7 +60,7 @@ endif
 #	rm -f bidon.o
 #
 
-lib: fastdebug.o trickBoundsChecking.o
+lib: $(OBJECTS)
 	ar rcs libfastdebug.a $^
 
 stubs:
@@ -73,7 +79,7 @@ testf:
 	rm test.o
 
 testc:
-	mpicc -o test -DTEST=1 fastdebug.c
+	mpicc -o test -DTEST=1 $(DEBUG_FLAGS) fastdebug.c
 
 clean:
 	rm -f fastdebug.o libfastdebug.a test.o trickBoundsChecking.o
